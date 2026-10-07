@@ -13,52 +13,31 @@ HƯỚNG DẪN - đọc rồi XÓA TOÀN BỘ các khối chú thích này sau k
 
 | | |
 |---|---|
-| Họ và tên | ___ |
-| MSSV | ___ |
+| Họ và tên | Nguyễn Khắc Giáp |
+| MSSV | 2A202602950 |
 | Lớp / Khóa | K4 |
-| Repo GitHub | https://github.com/___/___ |
-| Ngày nộp | ___ |
+| Repo GitHub | https://github.com/nguyengiapnfif/K4-L3-DAY21-NguyenKhacGiap-2A202602950-CI-CD-for-AI-Systems |
+| Ngày nộp | 07/10/2026 |
 
 ---
 
 ## 1. Bộ Siêu Tham Số Đã Chọn và Lý Do
 
-<!-- Khoảng 120 - 150 từ. Điền kết quả thật từ MLflow UI ở Bước 1, tối thiểu 3 lần chạy. -->
-
 | Lần chạy | n_estimators | learning_rate | max_depth | f1_score | accuracy |
 |---|---|---|---|---|---|
-| 1 | ___ | ___ | ___ | ___ | ___ |
-| 2 | ___ | ___ | ___ | ___ | ___ |
-| 3 | ___ | ___ | ___ | ___ | ___ |
+| 1 | 100 | 0.1 | 3 | 0.7109 | 0.8780 |
+| 2 | 50 | 0.05 | 2 | 0.6051 | 0.8460 |
+| 3 | 200 | 0.1 | 5 | 0.7149 | 0.8740 |
 
-**Bộ siêu tham số đã chọn:** `n_estimators=___`, `learning_rate=___`, `max_depth=___`.
+**Bộ siêu tham số đã chọn:** `n_estimators=200`, `learning_rate=0.1`, `max_depth=5`.
 
-**Lý do:** ___
-
-<!--
-Trả lời trong phần Lý do:
-  - Vì sao bộ này tốt hơn các bộ còn lại (dựa trên f1_score, không phải accuracy)?
-  - Lần chạy có accuracy cao nhất có trùng với lần có f1_score cao nhất không?
-    Nếu không, điều đó nói lên điều gì?
-  - Bạn quan sát thấy đánh đổi nào giữa n_estimators và learning_rate?
--->
+**Lý do:** Lần 3 có f1_score cao nhất (0.7149) và vượt ngưỡng 0.65 của Quality Gate. Lần chạy có accuracy cao nhất lại là lần 1 (0.8780), không trùng với lần có F1 cao nhất; accuracy chỉ dao động 0.846 - 0.878 trong khi F1 chênh gần 0.11, nên accuracy không phân biệt được chất lượng trên lớp thu nhập cao. Lần 2 dùng learning_rate nhỏ nhưng chỉ 50 cây nông nên mô hình chưa học đủ (F1 0.6051, dưới ngưỡng): learning_rate nhỏ phải đi kèm n_estimators lớn hơn để bù. Lần 3 chỉ nhỉnh hơn lần 1 khoảng 0.004 F1 nhưng huấn luyện lâu hơn (6.5s so với 4.1s), nên mức lợi từ mô hình lớn hơn là nhỏ.
 
 ---
 
 ## 2. Vì Sao Ngưỡng Chất Lượng Đặt Trên F1 Chứ Không Phải Accuracy
 
-<!-- Khoảng 120 - 150 từ. -->
-
-___
-
-<!--
-Cần nêu được:
-  - Phân bố lớp của tập dữ liệu (tỷ lệ lớp thu nhập > 50K) và hệ quả của nó.
-  - Accuracy của một mô hình luôn trả lời "thu nhập thấp" là bao nhiêu, vì sao con số
-    đó gây hiểu nhầm.
-  - F1 của lớp dương đo điều gì mà accuracy không đo được.
-  - Vì sao KHÔNG dùng average="weighted" hay average="macro" khi gọi f1_score.
--->
+Tập Adult chỉ có 24,8% mẫu thuộc lớp thu nhập > 50K, còn 75,2% thuộc lớp thu nhập thấp. Một mô hình vô dụng luôn trả lời "thu nhập thấp" vẫn đạt accuracy 0,752, tức chỉ thấp hơn các mô hình thật của lab (0,846 - 0,878) khoảng 0,09 - 0,13 dù không học được gì, nên accuracy che giấu việc mô hình có nhận ra được ai thu nhập cao hay không. F1 của lớp dương là trung bình điều hòa của precision và recall trên đúng lớp thu nhập cao; mô hình luôn đoán lớp 0 sẽ có F1 bằng 0. Vì vậy ngưỡng 0.65 trên F1 mới thật sự chặn được mô hình kém. Khi gọi `f1_score` không dùng `average="macro"` hay `"weighted"`, vì trung bình có trọng số theo số mẫu sẽ bị lớp đa số kéo điểm lên và che mất hiệu quả thực trên lớp thiểu số.
 
 ---
 
